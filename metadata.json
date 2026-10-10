@@ -1,0 +1,6 @@
+{
+  "name": "Workstation 98 Monitor",
+  "description": "Desktop monitoring bot workstation dengan antarmuka retro Windows 98, Playwright scraper engine, dan Baileys WhatsApp integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

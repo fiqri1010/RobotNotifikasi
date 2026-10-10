@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workstation 98 - Automation Monitor & Baileys Controller</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <style>
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #55aaaa; font-family: "MS Sans Serif", Tahoma, sans-serif;
+      overflow: hidden; user-select: none;
+    }
+    .main-container {
+      display: flex; flex-direction: column; width: calc(100vw - 16px);
+      height: calc(100vh - 16px); margin: 8px; box-sizing: border-box;
+    }
+    .title-bar-gradient {
+      background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+    }
+    .led-indicator {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+      border: 1px solid #333; margin-right: 3px;
+    }
+    .led-green { background: #00ff00; box-shadow: 0 0 5px #00ff00; }
+    .led-yellow { background: #ffff00; box-shadow: 0 0 5px #ffff00; }
+    .led-red { background: #ff0000; box-shadow: 0 0 5px #ff0000; }
+    .led-gray { background: #777; }
+    .log-terminal {
+      background: #000000; color: #00ff66; font-family: "Courier New", monospace;
+      font-size: 11px; padding: 6px; overflow-y: auto; flex: 1;
+      border: 2px inset #ffffff; box-shadow: inset 1px 1px 2px #000;
+    }
+    .chat-box {
+      background: #e6ebe3; border: 2px inset #ffffff; flex: 1;
+      overflow-y: auto; padding: 8px; display: flex; flex-direction: column;
+    }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); display: none; align-items: center;
+      justify-content: center; z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <div class="window main-container">
+    <!-- TITLE BAR -->
+    <div class="title-bar title-bar-gradient">
+      <div class="title-bar-text">Workstation 98 - Automation Monitor & Baileys Controller</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize"></button>
+        <button aria-label="Maximize"></button>
+        <button aria-label="Close" onclick="alert('Workstation 98 aktif di latar belakang.')"></button>
+      </div>
+    </div>
+
+    <!-- TOOLBAR & STATUS INDICATORS -->
+    <div style="background:#c0c0c0; border-bottom:1px solid #808080; padding:4px 6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+      <div style="display:flex; gap:4px;">
+        <button id="btn-start" style="font-weight:bold; color:#006000;">▶ Start Monitoring</button>
+        <button id="btn-stop" style="font-weight:bold; color:#900000;" disabled>⏹ Stop Monitoring</button>
+        <button id="btn-scrape">⚡ Scrape Now</button>
+        <button id="btn-pair-wa">📱 Pair WhatsApp (QR)</button>
+        <button id="btn-clear-logs">Bersihkan Log</button>
+      </div>
+
+      <div style="background:#dfdfdf; border:1px inset #808080; padding:2px 8px; font-size:11px; display:flex; align-items:center; gap:10px;">
+        <div>Scheduler: <span id="led-scheduler" class="led-indicator led-red"></span><b id="text-scheduler">STOPPED</b></div>
+        <div style="width:1px; height:12px; background:#aaa;"></div>
+        <div>Browser: <span id="led-browser" class="led-indicator led-gray"></span><b id="text-browser">Siap Login</b></div>
+        <div style="width:1px; height:12px; background:#aaa;"></div>
+        <div>WhatsApp: <span id="led-whatsapp" class="led-indicator led-red"></span><b id="text-whatsapp">Disconnected</b></div>
+      </div>
+    </div>
+
+    <!-- WORKSPACE TABS / SPLIT PANES -->
+    <div class="window-body" style="flex:1; display:flex; gap:6px; margin:4px; overflow:hidden;">
+      <!-- KIRI: LOG TERMINAL & ANTREAN TABEL -->
+      <div style="flex:1.2; display:flex; flex-direction:column; gap:6px; overflow:hidden;">
+        <!-- Terminal Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b style="font-size:11px;">Konsol Log Aktivitas Realtime:</b>
+        </div>
+        <div id="log-terminal" class="log-terminal">
+          <div><span style="color:#888;">[INIT]</span> <span style="color:#00ffff;">[SYSTEM]</span> Memulai antarmuka Workstation 98...</div>
+        </div>
+
+        <!-- Tabel Antrean Terakhir -->
+        <div style="height:140px; display:flex; flex-direction:column;">
+          <b style="font-size:11px; margin-bottom:2px;">Antrean Dokumen Terdeteksi (./downloads/):</b>
+          <div style="background:#fff; border:2px inset #fff; flex:1; overflow-y:auto;">
+            <table id="queue-table" style="width:100%; border-collapse:collapse; font-size:11px;">
+              <thead>
+                <tr style="background:#c0c0c0; border-bottom:1px solid #808080;">
+                  <th style="padding:2px; text-align:left;">No Tiket</th>
+                  <th style="padding:2px; text-align:left;">Pemohon</th>
+                  <th style="padding:2px; text-align:left;">Judul Dokumen</th>
+                  <th style="padding:2px; text-align:left;">PIC</th>
+                  <th style="padding:2px; text-align:left;">File PDF</th>
+                  <th style="padding:2px; text-align:left;">Waktu</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="6" style="text-align:center; padding:15px; color:#777; font-style:italic;">Belum ada baris antrean terdeteksi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- KANAN: MINI CHAT WHATSAPP DUA ARAH -->
+      <div style="flex:0.8; display:flex; flex-direction:column; background:#c0c0c0; border:2px outset #fff; overflow:hidden;">
+        <div style="background:#000080; color:#fff; padding:3px 6px; font-size:11px; font-weight:bold;">
+          WhatsApp Mini Chat (Baileys Controller)
+        </div>
+
+        <!-- Chat Bubble Container -->
+        <div id="chat-history" class="chat-box">
+          <div style="margin:auto; color:#777; font-style:italic; font-size:11px; text-align:center;">
+            Ketik perintah seperti <b>status</b>, <b>start</b>, atau <b>cek pic</b> untuk berinteraksi.
+          </div>
+        </div>
+
+        <!-- Chat Input & Quick Buttons -->
+        <div style="padding:4px; background:#c0c0c0; border-top:1px solid #808080;">
+          <div style="display:flex; gap:3px; margin-bottom:3px;">
+            <button class="btn-quick-cmd" data-cmd="status" style="font-size:10px; padding:1px 4px;">status</button>
+            <button class="btn-quick-cmd" data-cmd="start" style="font-size:10px; padding:1px 4px;">start</button>
+            <button class="btn-quick-cmd" data-cmd="stop" style="font-size:10px; padding:1px 4px;">stop</button>
+            <button class="btn-quick-cmd" data-cmd="cek pic 081234567890" style="font-size:10px; padding:1px 4px;">cek pic</button>
+          </div>
+          <form id="chat-form" style="display:flex; gap:3px;">
+            <input type="text" id="chat-input" placeholder="Ketik perintah WhatsApp..." style="flex:1; padding:3px; font-size:11px; border:2px inset #fff;">
+            <button type="submit" style="font-weight:bold;">Kirim</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR BAWAH -->
+    <div class="status-bar">
+      <div class="status-bar-field">Workstation 98 Aktif | Mode: Standalone Express + WebSocket</div>
+      <div class="status-bar-field" style="width:160px;">WebSocket: Live on /ws</div>
+      <div class="status-bar-field" style="width:90px;">Port 3000</div>
+    </div>
+  </div>
+
+  <!-- MODAL QR CODE -->
+  <div id="qr-modal" class="modal-overlay">
+    <div class="window" style="width:320px;">
+      <div class="title-bar title-bar-gradient">
+        <div class="title-bar-text">Autentikasi WhatsApp Baileys</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" class="btn-close-modal"></button>
+        </div>
+      </div>
+      <div class="window-body" style="text-align:center; padding:10px;">
+        <p style="font-size:11px; margin-top:0;">Pindai kode QR berikut menggunakan menu <b>Linked Devices</b> di WhatsApp Anda:</p>
+        <div style="background:#fff; border:2px inset #808080; padding:6px; display:inline-block; margin-bottom:8px;">
+          <img id="qr-image" src="" alt="WhatsApp QR Code" style="width:180px; height:180px; display:block;">
+        </div>
+        <div style="font-size:10px; color:#555;">Sesi akan disimpan di <code>./auth_info_baileys/</code></div>
+        <div style="margin-top:10px; display:flex; gap:4px;">
+          <button id="btn-sim-pair" style="flex:1; font-weight:bold; color:#000080;">⚡ Simulasikan Scan OK</button>
+          <button class="btn-close-modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

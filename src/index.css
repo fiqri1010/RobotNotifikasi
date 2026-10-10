@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --w98-teal: #008080;
+  --w98-gray: #c0c0c0;
+  --w98-dark-gray: #808080;
+  --w98-navy: #000080;
+  --w98-navy-light: #1084d0;
+  --w98-highlight: #ffffff;
+  --w98-shadow: #000000;
+  --w98-font: "MS Sans Serif", Tahoma, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--w98-teal);
+  font-family: var(--w98-font);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom retro styling enhancements */
+.desktop-bg {
+  background-color: #008080;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 8px 8px;
+}
+
+.title-bar-gradient {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+}
+
+.title-bar-inactive {
+  background: linear-gradient(90deg, #808080 0%, #b5b5b5 100%) !important;
+}
+
+.led-indicator {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid #404040;
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.8), 0 0 4px rgba(0,0,0,0.3);
+}
+
+.led-green {
+  background-color: #00ff00;
+  box-shadow: inset 1px 1px 1px #fff, 0 0 6px #00ff00;
+}
+
+.led-yellow {
+  background-color: #ffff00;
+  box-shadow: inset 1px 1px 1px #fff, 0 0 6px #ffff00;
+}
+
+.led-red {
+  background-color: #ff0000;
+  box-shadow: inset 1px 1px 1px #fff, 0 0 6px #ff0000;
+}
+
+.led-gray {
+  background-color: #707070;
+}
+
+/* Windows 98 Inset terminal log area */
+.log-terminal {
+  background-color: #000000;
+  color: #00ff66;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11.5px;
+  line-height: 1.4;
+  border: 2px inset #ffffff;
+  padding: 8px;
+  overflow-y: auto;
+  box-shadow: inset 2px 2px 3px rgba(0,0,0,0.8);
+}
+
+.chat-bubble-in {
+  background-color: #ffffff;
+  border: 1px solid #808080;
+  border-radius: 2px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  max-width: 85%;
+  align-self: flex-start;
+  box-shadow: 1px 1px 0 #404040;
+}
+
+.chat-bubble-out {
+  background-color: #d8f5c4;
+  border: 1px solid #70a060;
+  border-radius: 2px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  max-width: 85%;
+  align-self: flex-end;
+  box-shadow: 1px 1px 0 #404040;
+}
+
+/* Windows 98 button custom active styles */
+.retro-btn {
+  font-family: var(--w98-font);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 12px;
+  min-height: 24px;
+  cursor: pointer;
+}
+
+.retro-btn:active {
+  padding: 5px 11px 3px 13px;
+}

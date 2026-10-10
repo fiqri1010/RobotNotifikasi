@@ -1,0 +1,11 @@
+{
+  "cookies": [
+    {
+      "name": "workstation_sess",
+      "value": "auth_98_token_ok",
+      "domain": "localhost"
+    }
+  ],
+  "origins": [],
+  "savedAt": "2026-10-10T04:58:15.411Z"
+}
