@@ -443,21 +443,19 @@ export default function App() {
   const activePortalsCount = (status.portals || []).filter((p) => p.enabled).length;
 
   return (
-    <div className="w-screen h-screen p-1 md:p-2 bg-[#55aaaa] flex flex-col select-none overflow-hidden text-[12px]">
-      {/* JENDELA UTAMA WINDOWS 98 */}
-      <div className="window flex-1 flex flex-col shadow-2xl overflow-hidden">
-        {/* TITLE BAR */}
-        <div className="title-bar title-bar-gradient flex items-center justify-between px-1 select-none">
-          <div className="title-bar-text flex items-center gap-1.5 font-bold tracking-wide text-white">
-            <HardDrive size={14} className="text-yellow-300" />
-            <span>Workstation 98 - Multi-Website Scraper & Baileys Controller</span>
-          </div>
-          <div className="title-bar-controls flex gap-1">
-            <button aria-label="Minimize" />
-            <button aria-label="Maximize" />
-            <button aria-label="Close" onClick={() => alert('Workstation 98 aktif di latar belakang.')} />
-          </div>
+    <div className="w-screen h-screen flex flex-col select-none overflow-hidden text-[12px] bg-[#c0c0c0]">
+      {/* TITLE BAR UTAMA APLIKASI */}
+      <div className="title-bar title-bar-gradient flex items-center justify-between px-2 py-1 select-none flex-shrink-0">
+        <div className="title-bar-text flex items-center gap-2 font-bold tracking-wide text-white text-[12px]">
+          <HardDrive size={14} className="text-yellow-300" />
+          <span>Workstation Monitor - SIAP 3.0 & WhatsApp Baileys (KPU Bea Cukai Tanjung Priok)</span>
         </div>
+        <div className="title-bar-controls flex gap-1">
+          <button aria-label="Minimize" title="Minimize" />
+          <button aria-label="Maximize" title="Maximize" />
+          <button aria-label="Close" title="Close" onClick={() => alert('Workstation aktif di latar belakang.')} />
+        </div>
+      </div>
 
         {/* TOOLBAR KONTROL UTAMA & INDIKATOR KONEKSI */}
         <div className="p-1.5 bg-[#c0c0c0] border-b border-[#808080] flex flex-wrap items-center justify-between gap-2">
@@ -566,7 +564,7 @@ export default function App() {
         </div>
 
         {/* NAVIGASI TAB KLASIK WINDOWS 98 */}
-        <div className="window-body flex-1 flex flex-col p-2 bg-[#c0c0c0] overflow-hidden">
+        <div className="window-body flex-1 flex flex-col p-2 bg-[#c0c0c0] overflow-hidden m-0">
           <menu role="tablist" className="flex mb-1">
             <button
               role="tab"
@@ -1088,7 +1086,6 @@ export default function App() {
             {isWsConnected ? 'WS: Live' : 'WS: Poll'}
           </div>
         </div>
-      </div>
 
       {/* MODAL EDIT / ATUR PORTAL WEB (WINDOWS 98 DIALOG) */}
       {editingPortal && (
