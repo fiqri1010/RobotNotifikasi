@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import type { PortalConfig } from './configManager.ts';
 
 export type LogLevel = 'info' | 'warn' | 'error' | 'success' | 'debug';
 
@@ -21,6 +22,7 @@ export interface SystemStatus {
   whatsappStatus: 'DISCONNECTED' | 'SCAN_QR' | 'CONNECTING' | 'CONNECTED';
   whatsappQrCode: string | null;
   whatsappUserPhone: string | null;
+  portals?: PortalConfig[];
   totalItemsScraped: number;
   totalPdfDownloaded: number;
   totalWhatsAppSent: number;

@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { eventBus } from './eventBus.ts';
 import { configManager } from './configManager.ts';
 import { baileysClient } from '../whatsapp/baileysClient.js';
+import { formatPriokWhatsAppMessage } from '../whatsapp/formatters.js';
 
 export type WhatsAppConnectionState = 'DISCONNECTED' | 'SCAN_QR' | 'CONNECTING' | 'CONNECTED';
 
@@ -177,30 +178,42 @@ Ketik *!check* atau *start* untuk instruksi selanjutnya.`;
     picName: string,
     picContact: string,
     pdfPath: string,
-    pdfFilename: string
+    pdfFilename: string,
+    extraData?: any
   ): Promise<boolean> {
     const config = configManager.getConfig();
     const recipient = baileysClient.formatToJid(config.personalWhatsAppNumber);
 
-    const caption = `📄 *DOKUMEN BARU TERDETEKSI*
-━━━━━━━━━━━━━━━━━━━━
-• *No Tiket:* ${queueNo}
-• *Judul:* ${documentTitle}
-• *Pemohon:* ${applicant}
-• *PIC:* ${picName} (${picContact})
-• *Arsip:* ./downloads/${pdfFilename}
-━━━━━━━━━━━━━━━━━━━━
-Lampiran berkas PDF terlampir di bawah.`;
+    const docPayload = {
+      queueNo,
+      pibNumber: extraData?.pibNumber || queueNo,
+      pibDate: extraData?.pibDate || new Date().toLocaleDateString('id-ID'),
+      documentTitle,
+      applicantName: applicant,
+      importerName: extraData?.importerName || applicant,
+      picName,
+      picContact,
+      pdfPath,
+      pdfFilename,
+      fclLcl: extraData?.fclLcl || 'FCL',
+      locationTpft: extraData?.locationTpft || 'Siap Periksa Fisik di TPFT',
+      docs: extraData?.docs,
+      relatedPortals: extraData?.relatedPortals,
+      tpftDetail: extraData?.tpftDetail,
+      siteName: extraData?.siteName,
+    };
+
+    const caption = formatPriokWhatsAppMessage(docPayload, config.whatsAppTemplate);
 
     eventBus.emitLog(
       'WHATSAPP',
       'success',
-      `Notifikasi dokumen #${queueNo} beserta berkas PDF (${pdfFilename}) dikirim ke WhatsApp ${config.personalWhatsAppNumber}`
+      `Notifikasi dokumen #${queueNo} (${pdfFilename}) dikirim ke WhatsApp ${config.personalWhatsAppNumber}`
     );
 
     const sent = await baileysClient.sendPdfDocument(recipient, pdfPath, caption);
     if (!sent) {
-      // Fallback emisi chat jika offline
+      // Fallback emisi chat jika offline / simulasi
       eventBus.emitChat({
         direction: 'OUTGOING',
         sender: recipient,

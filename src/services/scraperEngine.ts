@@ -54,33 +54,80 @@ export class ScraperEngine {
 
     this.isRunning = true;
     const startTime = Date.now();
-    eventBus.emitLog('SCRAPER', 'info', 'Memulai siklus scraping antrean dokumen...');
+    eventBus.emitLog('SCRAPER', 'info', 'Memulai siklus scraping antrean dokumen multi-portal...');
 
     const config = configManager.getConfig();
-    const newDocsFound: ScrapedDocument[] = [];
+    const newDocsFound: any[] = [];
 
     try {
-      // Dynamic import Playwright to handle environments gracefully
-      let playwright: typeof import('playwright') | null = null;
+      // 1. Sinkronisasi portal dari configManager ke adapterRegistry
       try {
-        playwright = await import('playwright');
-      } catch (err: unknown) {
-        eventBus.emitLog('SCRAPER', 'warn', `Modul Playwright belum terpasang: ${err instanceof Error ? err.message : String(err)}. Menggunakan modul simulasi scraper.`);
+        const { adapterRegistry } = await import('../scraper/registry.js');
+        const configuredPortals = configManager.getPortals();
+        configuredPortals.forEach((p) => {
+          if (!adapterRegistry.getById(p.id)) {
+            // Daftarkan portal dinamis
+            const { BaseSiteAdapter } = require('../scraper/adapters/baseAdapter.js');
+            adapterRegistry.register(new BaseSiteAdapter({
+              id: p.id,
+              name: p.name,
+              targetUrl: p.targetUrl,
+              enabled: p.enabled,
+              authUsername: p.authUsername,
+              authPassword: p.authPassword,
+              loginFormSelector: p.loginFormSelector,
+              passwordSelector: p.passwordSelector,
+              tableRowsSelector: p.tableRowsSelector,
+              idColSelector: p.idColSelector,
+              applicantColSelector: p.applicantColSelector,
+              titleColSelector: p.titleColSelector,
+              picColSelector: p.picColSelector,
+              downloadBtnSelector: p.downloadBtnSelector,
+              sessionPath: p.sessionPath,
+              downloadsDir: p.downloadsDir,
+            }));
+          } else {
+            adapterRegistry.setEnabled(p.id, p.enabled);
+            adapterRegistry.update(p.id, p);
+          }
+        });
+      } catch {
+        // Abaikan jika sinkronisasi dinamis sudah terdaftar
       }
 
-      if (playwright && playwright.chromium) {
-        try {
-          const result = await this.executePlaywrightAutomation(playwright, config);
-          newDocsFound.push(...result);
-        } catch (playwrightError: unknown) {
-          const errMsg = playwrightError instanceof Error ? playwrightError.message : String(playwrightError);
-          eventBus.emitLog('SCRAPER', 'warn', `Gagal menjalankan Chromium lokal (${errMsg}). Mengalihkan ke runner uji mock portal.`);
-          const simulated = await this.executeSimulatedScraper(config);
-          newDocsFound.push(...simulated);
+      // 2. Jalankan JobRunner multi-website round-robin
+      let runnerResult: any = null;
+      try {
+        const { jobRunner } = await import('../scraper/jobRunner.js');
+        runnerResult = await jobRunner.runOnce();
+      } catch (err: any) {
+        eventBus.emitLog('SCRAPER', 'warn', `JobRunner internal fallback: ${err.message}`);
+      }
+
+      // 3. Masukkan dokumen baru dan perkaya dengan relationEngine
+      const { relationEngine } = await import('./relationEngine.ts');
+      
+      if (runnerResult && runnerResult.documents && runnerResult.documents.length > 0) {
+        for (const doc of runnerResult.documents) {
+          const enriched = relationEngine.enrichDocument(doc);
+          this.knownDocumentIds.add(doc.queueNo || doc.pibNumber || doc.id);
+          eventBus.addDocument(enriched);
+          eventBus.emitLog(
+            'SCRAPER',
+            'success',
+            `[BARIS BARU] #${doc.pibNumber || doc.queueNo} (${doc.documentTitle || 'PIB'}) dari ${doc.importerName || doc.applicantName}. TPFT: ${enriched.locationTpft || 'Belum Terjadwal'}. File: ${doc.pdfFilename}`
+          );
+          newDocsFound.push(enriched);
         }
       } else {
+        // Fallback simulated jika antrean kosong
         const simulated = await this.executeSimulatedScraper(config);
-        newDocsFound.push(...simulated);
+        for (const doc of simulated) {
+          const enriched = relationEngine.enrichDocument(doc);
+          this.knownDocumentIds.add(doc.queueNo || doc.id);
+          eventBus.addDocument(enriched);
+          newDocsFound.push(enriched);
+        }
       }
 
       const durationMs = Date.now() - startTime;

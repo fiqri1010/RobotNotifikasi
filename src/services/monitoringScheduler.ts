@@ -32,6 +32,7 @@ export class MonitoringScheduler {
       whatsappStatus: whatsappEngine.getState(),
       whatsappQrCode: whatsappEngine.getQrCodeDataUrl(),
       whatsappUserPhone: whatsappEngine.getUserJid(),
+      portals: configManager.getPortals(),
       totalItemsScraped: this.totalItemsScraped,
       totalPdfDownloaded: this.totalPdfDownloaded,
       totalWhatsAppSent: this.totalWhatsAppSent,
@@ -130,7 +131,8 @@ export class MonitoringScheduler {
             doc.picName,
             doc.picContact,
             doc.pdfPath,
-            doc.pdfFilename
+            doc.pdfFilename,
+            doc
           );
 
           if (sent) {
